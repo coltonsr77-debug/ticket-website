@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Panel</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <h1>Admin Panel</h1>
+    <a class="link-back" href="index.html">← Home</a>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Manage Tickets</h2>
+      <div id="adminList" class="admin-list"></div>
+      <div class="actions-row">
+        <button id="clearBtn" class="btn ghost">Clear all tickets</button>
+        <a class="btn" href="tickets.html">View as user</a>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+  <script>
+    const adminList = document.getElementById('adminList');
+    function renderAdmin() {
+      const list = getTickets().sort((a,b)=> new Date(b.createdAt)-new Date(a.createdAt));
+      if (!list.length) {
+        adminList.innerHTML = '<p class="muted">No tickets.</p>';
+        return;
+      }
+
+      adminList.innerHTML = '';
+      list.forEach(t => {
+        const el = document.createElement('div');
+        el.className = 'admin-row';
+        el.innerHTML = `
+          <div class="admin-left">
+            <strong>${escapeHtml(t.title)}</strong>
+            <div class="muted small">#${t.id} • ${new Date(t.createdAt).toLocaleString()}</div>
+            <div class="small">Contact: ${escapeHtml(t.contact||'—')}</div>
+          </div>
+          <div class="admin-right">
+            <select class="status-select">
+              <option value="open">open</option>
+              <option value="in-progress">in-progress</option>
+              <option value="resolved">resolved</option>
+              <option value="closed">closed</option>
+            </select>
+            <button class="btn small delete">Delete</button>
+            <a class="btn small" href="ticket.html?id=${encodeURIComponent(t.id)}">View</a>
+          </div>
+        `;
+        const select = el.querySelector('.status-select');
+        select.value = t.status;
+        select.addEventListener('change', () => {
+          t.status = select.value;
+          updateTicket(t);
+          renderAdmin();
+        });
+        el.querySelector('.delete').addEventListener('click', () => {
+          if (confirm('Delete ticket #' + t.id + '?')) {
+            deleteTicket(t.id);
+            renderAdmin();
+          }
+        });
+        adminList.appendChild(el);
+      });
+    }
+
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      if (confirm('Remove ALL tickets (this cannot be undone)?')) {
+        clearTickets();
+        renderAdmin();
+      }
+    });
+
+    renderAdmin();
+
+    function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  </script>
+</body>
+</html>
