@@ -1,75 +1,47 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Create Ticket</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <header class="site-header">
-    <h1>Create Ticket</h1>
-    <a class="link-back" href="index.html">← Home</a>
-  </header>
+<script>
+document.querySelector('form').addEventListener('submit', async (e) => {
+  e.preventDefault();
 
-  <main class="container">
-    <form id="ticketForm" class="card" aria-label="Create ticket form">
-      <label>
-        Title
-        <input required id="title" name="title" placeholder="Short title (e.g. Can't login)" />
-      </label>
+  const title = document.getElementById('title').value;
+  const description = document.getElementById('description').value;
+  const priority = document.getElementById('priority').value;
+  const contact = document.getElementById('contact').value;
 
-      <label>
-        Description
-        <textarea required id="description" name="description" rows="6" placeholder="Describe the issue"></textarea>
-      </label>
+  // Store locally if you want
+  const ticket = { title, description, priority, contact };
+  localStorage.setItem('ticket', JSON.stringify(ticket));
 
-      <label>
-        Priority
-        <select id="priority" name="priority">
-          <option value="low">Low</option>
-          <option value="medium" selected>Medium</option>
-          <option value="high">High</option>
-        </select>
-      </label>
+  // Your Discord webhook URL
+  const webhookURL = "https://discord.com/api/webhooks/1427062309540466829/CAVoGYo4CRUCOugkxYnVqLpasQtu8DgPGOZzQWl4CYfArLQ-a8UW2SinDdQFZwO7juyt";
 
-      <label>
-        Contact (email or phone)
-        <input id="contact" name="contact" placeholder="you@example.com" />
-      </label>
+  // Build message
+  const message = {
+    embeds: [
+      {
+        title: `🎫 New Ticket: ${title}`,
+        color: 3447003,
+        fields: [
+          { name: "Priority", value: priority, inline: true },
+          { name: "Contact", value: contact, inline: true },
+          { name: "Description", value: description },
+        ],
+        timestamp: new Date().toISOString(),
+      },
+    ],
+  };
 
-      <div class="form-actions">
-        <button type="submit" class="btn">Create Ticket</button>
-        <a class="btn ghost" href="tickets.html">View Tickets</a>
-      </div>
-    </form>
-  </main>
+  // Send to Discord
+  const response = await fetch(webhookURL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(message),
+  });
 
-  <script src="app.js"></script>
-  <script>
-    // wire up submit
-    document.getElementById('ticketForm').addEventListener('submit', function (e) {
-      e.preventDefault();
-      const t = document.getElementById('title').value.trim();
-      const d = document.getElementById('description').value.trim();
-      const p = document.getElementById('priority').value;
-      const c = document.getElementById('contact').value.trim();
-
-      if (!t || !d) {
-        alert('Title and description are required.');
-        return;
-      }
-
-      const id = saveTicket({
-        title: t,
-        description: d,
-        priority: p,
-        contact: c,
-      });
-
-      // go to details page
-      location.href = `ticket.html?id=${encodeURIComponent(id)}`;
-    });
-  </script>
-</body>
-</html>
+  if (response.ok) {
+    alert("Ticket submitted! It has been sent to the Discord server.");
+    window.location.href = "ticket_details.html";
+  } else {
+    alert("Error sending ticket to Discord.");
+  }
+});
+</script>
