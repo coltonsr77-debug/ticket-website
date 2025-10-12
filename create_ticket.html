@@ -1,47 +1,109 @@
-<script>
-document.querySelector('form').addEventListener('submit', async (e) => {
-  e.preventDefault();
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Ticket</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    form {
+      background: #161b22;
+      padding: 20px;
+      border-radius: 10px;
+      width: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    input, select, textarea, button {
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      width: 100%;
+    }
+    button {
+      background: #238636;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #2ea043;
+    }
+  </style>
+</head>
+<body>
+  <h1>Create a Support Ticket</h1>
 
-  const title = document.getElementById('title').value;
-  const description = document.getElementById('description').value;
-  const priority = document.getElementById('priority').value;
-  const contact = document.getElementById('contact').value;
+  <form id="ticketForm">
+    <input type="text" id="title" placeholder="Ticket Title" required />
+    <textarea id="description" placeholder="Describe the issue..." required></textarea>
+    <select id="priority" required>
+      <option value="" disabled selected>Priority</option>
+      <option value="Low">Low</option>
+      <option value="Medium">Medium</option>
+      <option value="High">High</option>
+    </select>
+    <input type="email" id="contact" placeholder="Your Email or Discord Tag" required />
+    <button type="submit">Submit Ticket</button>
+  </form>
 
-  // Store locally if you want
-  const ticket = { title, description, priority, contact };
-  localStorage.setItem('ticket', JSON.stringify(ticket));
+  <script>
+    document.getElementById("ticketForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-  // Your Discord webhook URL
-  const webhookURL = "https://discord.com/api/webhooks/1427062309540466829/CAVoGYo4CRUCOugkxYnVqLpasQtu8DgPGOZzQWl4CYfArLQ-a8UW2SinDdQFZwO7juyt";
+      const title = document.getElementById("title").value;
+      const description = document.getElementById("description").value;
+      const priority = document.getElementById("priority").value;
+      const contact = document.getElementById("contact").value;
 
-  // Build message
-  const message = {
-    embeds: [
-      {
-        title: `🎫 New Ticket: ${title}`,
-        color: 3447003,
+      // ✅ Replace this with your actual webhook URL
+      const webhookURL = "https://discord.com/api/webhooks/XXXXXXXXXX/YYYYYYYYYYYYYYYYYYYYYYYYYYYYYY";
+
+      const embed = {
+        title: `🎟️ New Ticket: ${title}`,
+        color: 0x5865f2, // Discord blurple
         fields: [
           { name: "Priority", value: priority, inline: true },
           { name: "Contact", value: contact, inline: true },
-          { name: "Description", value: description },
+          { name: "Description", value: description }
         ],
-        timestamp: new Date().toISOString(),
-      },
-    ],
-  };
+        footer: { text: "Ticket System" },
+        timestamp: new Date().toISOString()
+      };
 
-  // Send to Discord
-  const response = await fetch(webhookURL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(message),
-  });
+      const payload = {
+        username: "Ticket Bot",
+        avatar_url: "https://cdn-icons-png.flaticon.com/512/5968/5968756.png",
+        embeds: [embed]
+      };
 
-  if (response.ok) {
-    alert("Ticket submitted! It has been sent to the Discord server.");
-    window.location.href = "ticket_details.html";
-  } else {
-    alert("Error sending ticket to Discord.");
-  }
-});
-</script>
+      try {
+        const response = await fetch(webhookURL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+          alert("✅ Ticket submitted successfully!");
+          document.getElementById("ticketForm").reset();
+        } else {
+          alert("❌ Error sending ticket. Please try again.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("⚠️ Failed to send the ticket.");
+      }
+    });
+  </script>
+</body>
+</html>
