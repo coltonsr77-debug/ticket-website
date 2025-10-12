@@ -1,11 +1,3 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Admin Panel</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
 <body>
   <header class="site-header">
     <h1>Admin Panel</h1>
@@ -13,7 +5,19 @@
   </header>
 
   <main class="container">
-    <section class="card">
+    <!-- Password Gate -->
+    <section id="loginCard" class="card">
+      <h2>Enter Admin Password</h2>
+      <p class="muted">This page is restricted to administrators.</p>
+      <input id="adminPass" type="password" placeholder="Enter password" />
+      <div class="form-actions">
+        <button id="loginBtn" class="btn">Login</button>
+      </div>
+      <p id="errorMsg" class="muted small" style="color:#dc2626;display:none;">Incorrect password.</p>
+    </section>
+
+    <!-- Hidden Admin Section -->
+    <section id="adminSection" class="card" style="display:none;">
       <h2>Manage Tickets</h2>
       <div id="adminList" class="admin-list"></div>
       <div class="actions-row">
@@ -25,6 +29,39 @@
 
   <script src="app.js"></script>
   <script>
+    const ADMIN_PASSWORD = "secret123"; // 🔒 change this to whatever you want
+
+    const loginCard = document.getElementById('loginCard');
+    const adminSection = document.getElementById('adminSection');
+    const errorMsg = document.getElementById('errorMsg');
+    const input = document.getElementById('adminPass');
+    const loginBtn = document.getElementById('loginBtn');
+
+    loginBtn.addEventListener('click', checkLogin);
+    input.addEventListener('keypress', e => { if (e.key === 'Enter') checkLogin(); });
+
+    function checkLogin() {
+      if (input.value === ADMIN_PASSWORD) {
+        localStorage.setItem('admin_logged_in', '1');
+        showAdminPanel();
+      } else {
+        errorMsg.style.display = 'block';
+        input.value = '';
+      }
+    }
+
+    // if already logged in previously
+    if (localStorage.getItem('admin_logged_in') === '1') {
+      showAdminPanel();
+    }
+
+    function showAdminPanel() {
+      loginCard.style.display = 'none';
+      adminSection.style.display = 'block';
+      renderAdmin();
+    }
+
+    // Admin logic
     const adminList = document.getElementById('adminList');
     function renderAdmin() {
       const list = getTickets().sort((a,b)=> new Date(b.createdAt)-new Date(a.createdAt));
@@ -78,9 +115,6 @@
       }
     });
 
-    renderAdmin();
-
     function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   </script>
 </body>
-</html>
